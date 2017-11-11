@@ -2,7 +2,7 @@
 
 * docker pull node --> we need this image for testing
 * go to whereever this code lives, hopefully you're already there :)
-* docker run --rm --name test -v (pwd):'/test' -p 8080:8080 -it node bash
+* docker run --rm --name test -v $(pwd):'/test' -p 8080:8080 -it node bash
 * now you're in the docker container, cd to /test and run npm start  
 * Whatever you change will be reflected inside the docker container
 
