@@ -59,48 +59,47 @@ router.route('/exercise1_task1')
          */
         // =================================================================================================================
 
-        let numberUsers = '';
-        let userNames = [];
-        let numStorageDisks = [];
-        let storageDiskInfo = [];
         // get the number of currently logged in users
         exec('who | wc -l', (error, stdout, stderr) => {
             if (error) {
                 console.error(`exec error: ${error}`);
                 return;
             }
-            console.log("Current number of users", stdout);
-        });
-        // get the names of the users
-        exec("who | awk '{print $1}'", (error, stdout, stderr) => {
-            if (error) {
-                console.error(`exec error: ${error}`);
-                return;
-            }
-            console.log("Names of these users", stdout);
-        });
-        // all the necessary disk information
-        exec(`lsblk -io KNAME,TYPE,SIZE | awk 'NR>1 {
-            if ($2 == "disk")
-                print $1, $2, $3
-        }'`, (error, stdout, stderr) => {
-            if (error) {
-                console.error(`exec error: ${error}`);
-                return;
-            }
-            console.log(stdout);
-        });
-        // only thing left here is the plug the data in the right spots, we get the stuff from within callbacks,
-        // promises, promises, I don't remember the right way to do it now :)
-        let exercise_1_Message = {
-            message: 'exercise_1',
-            numberUsers: 'numberUsers',
-            userNames: ['user1', 'user2'],
-            numStorageDisks: 'xy',
-            storageDisksInfo: ['size1', 'size2', 'size3']
-        };
-        res.json(exercise_1_Message);
+            let numberUsers = parseInt(stdout);
 
+            // get the names of the users
+            exec("who | awk '{print $1}'", (error, stdout, stderr) => {
+                if (error) {
+                    console.error(`exec error: ${error}`);
+                    return;
+                }
+                let userNames = stdout.split("\n").filter((e) => e);
+
+                // all the necessary disk information
+                let diskInfoPromise = exec(`lsblk -io KNAME,TYPE,SIZE | awk 'NR>1 {
+                    if ($2 == "disk")
+                        print $3
+                }'`, (error, stdout, stderr) => {
+                    if (error) {
+                        console.error(`exec error: ${error}`);
+                        return;
+                    }
+
+                    let diskSizes = stdout.split("\n").filter((e) => e);
+
+                    // only thing left here is the plug the data in the right spots, we get the stuff from within callbacks,
+                    // promises, promises, I don't remember the right way to do it now :)
+                    let exercise_1_Message = {
+                        message: 'exercise_1',
+                        numberUsers: numberUsers,
+                        userNames: userNames,
+                        numStorageDisks: diskSizes.length,
+                        storageDisksInfo: diskSizes
+                    };
+                    res.json(exercise_1_Message);
+                });
+            });
+        });
     });
 /**
  * Exercise 1: Task 2 Route (Service Level Authentication)
